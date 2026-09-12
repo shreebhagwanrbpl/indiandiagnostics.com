@@ -1,6 +1,6 @@
 {
   "apphosting": {
-    "backendId": "clinidixcom",
+    "backendId": "indiandiagnosticscom",
     "rootDir": "/",
     "ignore": [
       "node_modules",

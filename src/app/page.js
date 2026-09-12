@@ -33,7 +33,6 @@ import ProductCard from "@/components/ProductCard";
 import ContactForm from "@/components/ContactForm";
 import HeroCarousel from "@/components/HeroCarousel";
 import { fallbackProducts } from "@/data/productsData";
-import { fallbackServices } from "@/data/servicesData";
 import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
 
 const stats = [
@@ -92,7 +91,7 @@ const pillars = [
 
 const testimonials = [
   {
-    quote: "Raj Biomedical transformed our central laboratory setup. Their automated analyzers increased our daily sample throughput by 40% with zero downtime.",
+    quote: "Raj Biosis transformed our central laboratory setup. Their automated analyzers increased our daily sample throughput by 40% with zero downtime.",
     author: "Dr. Arvind Sharma",
     role: "Chief Pathologist",
     institution: "Apollo Diagnostics Center",
@@ -115,9 +114,8 @@ const testimonials = [
 ];
 
 export default function Home({ city }) {
-  const [services, setServices] = useState(fallbackServices);
+  const [services, setServices] = useState([]);
   const [products, setProducts] = useState(fallbackProducts);
-  const [activeCategory, setActiveCategory] = useState("All");
   const [homeData, setHomeData] = useState(null);
   const [contactInfo, setContactInfo] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +143,7 @@ export default function Home({ city }) {
         // Fetch home page configuration (title, description, buttons, carousel media)
         try {
           const homeSnap = await getDoc(
-            doc(db, "websites", "clinidixcom", "pages", "home")
+            doc(db, "websites", "indiandiagnosticscom", "pages", "home")
           );
           if (homeSnap.exists()) {
             setHomeData(homeSnap.data());
@@ -157,7 +155,7 @@ export default function Home({ city }) {
         // Fetch contact information for dynamic helpline info
         try {
           const contactSnap = await getDoc(
-            doc(db, "websites", "clinidixcom", "pages", "contact")
+            doc(db, "websites", "indiandiagnosticscom", "pages", "contact")
           );
           if (contactSnap.exists()) {
             setContactInfo(contactSnap.data().contactInfo || []);
@@ -166,17 +164,26 @@ export default function Home({ city }) {
           console.error("Error fetching contact data:", contactErr);
         }
 
-        // Fetch services from Firebase if available
+        // Fetch services dynamically from the current website's Firebase document.
+        // No static fallback is used. If no services are saved, the UI shows "Services Not Found".
+        const hostname =
+          typeof window !== "undefined" ? window.location.hostname : "";
+
+        const websiteId =
+          hostname === "localhost" || hostname === "127.0.0.1"
+            ? "globalhealthcartcom"
+            : hostname
+              .replace(/^www\\./, "")
+              .replace(/\\./g, "");
+
         const serviceSnap = await getDoc(
-          doc(db, "websites", "clinidixcom", "pages", "services")
+          doc(db, "websites", websiteId, "pages", "services")
         );
-        if (serviceSnap.exists() && serviceSnap.data().services?.length > 0) {
-          const dbServices = serviceSnap.data().services.map((s, idx) => ({
-            ...fallbackServices[idx % fallbackServices.length],
-            title: s.title || fallbackServices[idx % fallbackServices.length].title,
-            desc: s.desc || fallbackServices[idx % fallbackServices.length].desc,
-          }));
-          setServices(dbServices);
+
+        if (serviceSnap.exists() && Array.isArray(serviceSnap.data().services)) {
+          setServices(serviceSnap.data().services);
+        } else {
+          setServices([]);
         }
 
         // Fetch products dynamically from Firestore
@@ -194,12 +201,9 @@ export default function Home({ city }) {
     fetchData();
   }, []);
 
-  const categories = ["All", ...Array.from(new Set(products.map((p) => p.category)))];
-
-  const filteredProducts =
-    activeCategory === "All"
-      ? products.slice(0, 6)
-      : products.filter((p) => p.category === activeCategory).slice(0, 6);
+  // Homepage shows only the first 3 products.
+  // Category filters are intentionally not shown on the homepage.
+  const featuredProducts = products.slice(0, 3);
 
   const serviceIcons = [
     <Microscope size={28} key={1} />,
@@ -237,7 +241,7 @@ export default function Home({ city }) {
   })();
 
   return (
-    <div className="bg-[#FFF9EF]/40 text-[#38240D]">
+    <div className="bg-[#F4FBFC]/40 text-[#10373C]">
       {/* ================= DYNAMIC HERO BANNER & CAROUSEL ================= */}
       <HeroCarousel
         homeData={homeData}
@@ -246,22 +250,22 @@ export default function Home({ city }) {
       />
 
       {/* ================= STATS TICKER ================= */}
-      <section className="bg-gradient-to-r from-[#38240D] via-[#5B4634] to-[#38240D] py-10 text-white shadow-inner">
+      <section className="bg-gradient-to-r from-[#10373C] via-[#45656A] to-[#10373C] py-10 text-white shadow-inner">
         <div className="container-custom">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div key={idx} className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#C05800]/25 text-[#E4C5A2] border border-[#C05800]/40">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#008B9A]/25 text-[#A8DDE2] border border-[#008B9A]/40">
                     <Icon size={26} />
                   </div>
                   <div>
-                    <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                    <h3 className="text-2xl sm:text-3xl font-black tracking-tight !text-white">
                       {item.number}
                     </h3>
-                    <p className="text-xs sm:text-sm font-bold text-[#E4C5A2]">{item.title}</p>
-                    <p className="text-[11px] text-[#E8D3BC]/80 hidden sm:block">{item.desc}</p>
+                    <p className="text-xs sm:text-sm font-bold !text-[#A8DDE2]">{item.title}</p>
+                    <p className="text-[11px] !text-[#B6E2E7]/80 hidden sm:block">{item.desc}</p>
                   </div>
                 </div>
               );
@@ -271,7 +275,7 @@ export default function Home({ city }) {
       </section>
 
       {/* ================= PILLARS / WHY CHOOSE US ================= */}
-      <section className="section-padding bg-gradient-to-b from-white via-[#FFF9EF] to-[#FDFBD4]">
+      <section className="section-padding bg-gradient-to-b from-white via-[#F4FBFC] to-[#E4F8FA]">
         <div className="container-custom">
           <SectionTitle
             badge="Why Modern Labs Choose Us"
@@ -286,27 +290,27 @@ export default function Home({ city }) {
               return (
                 <div
                   key={index}
-                  className="group relative flex flex-col justify-between rounded-3xl border border-[#E8D3BC] bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:border-[#C05800]/50 hover:shadow-2xl hover:shadow-[#C05800]/15"
+                  className="group relative flex flex-col justify-between rounded-3xl border border-[#B6E2E7] bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:border-[#008B9A]/50 hover:shadow-2xl hover:shadow-[#008B9A]/15"
                 >
                   <div>
-                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3E4D2] text-[#C05800] transition-all duration-300 group-hover:bg-[#C05800] group-hover:text-white group-hover:scale-110 shadow-sm">
+                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D4F1F4] text-[#008B9A] transition-all duration-300 group-hover:!bg-[#008B9A] group-hover:text-white group-hover:scale-110 shadow-sm">
                       <Icon size={28} />
                     </div>
 
-                    <span className="mb-3 inline-block rounded-full bg-[#FFF9EF] border border-[#E8D3BC] px-3 py-1 text-xs font-bold text-[#713600]">
+                    <span className="mb-3 inline-block rounded-full bg-[#F4FBFC] border border-[#B6E2E7] px-3 py-1 text-xs font-bold text-[#005C66]">
                       {pillar.badge}
                     </span>
 
-                    <h3 className="mb-3 text-xl font-bold text-[#38240D] group-hover:text-[#C05800] transition-colors">
+                    <h3 className="mb-3 text-xl font-bold text-[#10373C] group-hover:text-[#008B9A] transition-colors">
                       {pillar.title}
                     </h3>
 
-                    <p className="text-sm leading-relaxed text-[#5B4634]">
+                    <p className="text-sm leading-relaxed text-[#45656A]">
                       {pillar.desc}
                     </p>
                   </div>
 
-                  <div className="mt-8 pt-4 border-t border-[#E8D3BC]/40 flex items-center gap-2 text-xs font-bold text-[#C05800]">
+                  <div className="mt-8 pt-4 border-t border-[#B6E2E7]/40 flex items-center gap-2 text-xs font-bold text-[#008B9A]">
                     <span>Learn standard</span>
                     <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                   </div>
@@ -318,7 +322,7 @@ export default function Home({ city }) {
       </section>
 
       {/* ================= FEATURED PRODUCTS SHOWCASE ================= */}
-      <section className="section-padding bg-white border-y border-[#E8D3BC]/50">
+      <section className="section-padding bg-white border-y border-[#B6E2E7]/50">
         <div className="container-custom">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <SectionTitle
@@ -329,32 +333,16 @@ export default function Home({ city }) {
 
             <Link
               href={makeLink("/items")}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#FFF9EF] border border-[#E8D3BC] px-6 py-3.5 text-sm font-bold text-[#C05800] shadow-sm transition-all hover:bg-[#C05800] hover:text-white hover:border-[#C05800] shrink-0"
+              className="inline-flex items-center gap-2 rounded-2xl !bg-[#F4FBFC] border border-[#B6E2E7] px-6 py-3.5 text-sm font-bold !text-[#008B9A] shadow-sm transition-all hover:!bg-[#008B9A] hover:!text-white hover:border-[#008B9A] shrink-0"
             >
               <span>View All Products</span>
               <ArrowRight size={16} />
             </Link>
           </div>
 
-          {/* Category Tabs */}
-          <div className="mt-10 flex flex-wrap items-center gap-3 border-b border-[#E8D3BC]/60 pb-4">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`rounded-xl px-5 py-2.5 text-xs sm:text-sm font-bold transition-all ${activeCategory === cat
-                  ? "bg-[#C05800] text-white shadow-md shadow-[#C05800]/20"
-                  : "bg-[#FFF9EF] border border-[#E8D3BC] text-[#5B4634] hover:bg-[#F3E4D2]"
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
           {/* Product Grid */}
           <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((prod) => (
+            {featuredProducts.map((prod) => (
               <ProductCard key={prod.id} product={prod} makeLink={makeLink} />
             ))}
           </div>
@@ -362,7 +350,7 @@ export default function Home({ city }) {
       </section>
 
       {/* ================= SERVICES MATRIX ================= */}
-      <section className="section-padding bg-gradient-to-b from-[#FDFBD4] via-white to-[#FFF9EF]">
+      <section className="section-padding bg-gradient-to-b from-[#E4F8FA] via-white to-[#F4FBFC]">
         <div className="container-custom">
           <SectionTitle
             badge="Healthcare Solutions"
@@ -371,30 +359,50 @@ export default function Home({ city }) {
             center
           />
 
-          <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((srv, idx) => (
-              <ServiceCard
-                key={srv.id || idx}
-                icon={serviceIcons[idx % serviceIcons.length]}
-                title={srv.title}
-                description={srv.desc}
-                badge={srv.badge}
-                turnaround={srv.turnaround}
-                highlights={srv.highlights}
-                makeLink={makeLink}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="mt-16 flex min-h-[220px] items-center justify-center rounded-3xl border border-[#B6E2E7] bg-white p-10 text-center shadow-sm">
+              <p className="text-base font-semibold text-[#45656A]">
+                Loading services...
+              </p>
+            </div>
+          ) : services.length === 0 ? (
+            <div className="mt-16 flex min-h-[220px] flex-col items-center justify-center rounded-3xl border border-dashed border-[#B6E2E7] bg-white p-10 text-center shadow-sm">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F4FBFC] text-[#008B9A]">
+                <Wrench size={30} />
+              </div>
+              <h3 className="mt-5 text-2xl font-bold text-[#10373C]">
+                Services Not Found
+              </h3>
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-[#45656A]">
+                No services are currently available for this website.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {services.map((srv, idx) => (
+                <ServiceCard
+                  key={srv.id || idx}
+                  icon={serviceIcons[idx % serviceIcons.length]}
+                  title={srv.title}
+                  description={srv.desc}
+                  badge={srv.badge}
+                  turnaround={srv.turnaround}
+                  highlights={srv.highlights}
+                  makeLink={makeLink}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* ================= ISO & QUALITY CERTIFICATION BANNER ================= */}
-      <section className="section-padding bg-[#38240D] text-white relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-20 -bottom-20 h-96 w-96 rounded-full bg-[#C05800]/20 blur-3xl" />
+      <section className="section-padding bg-[#10373C] text-white relative overflow-hidden">
+        <div className="pointer-events-none absolute -right-20 -bottom-20 h-96 w-96 rounded-full bg-[#008B9A]/20 blur-3xl" />
         <div className="container-custom relative z-10">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#C05800]/30 border border-[#C05800]/50 px-4 py-1.5 text-xs font-bold text-[#E4C5A2] uppercase tracking-wider">
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#008B9A]/70 border border-[#008B9A]/50 px-4 py-1.5 text-xs font-bold text-[#ffffff] uppercase tracking-wider">
                 <Award size={16} /> Quality Assurance & Compliance
               </span>
 
@@ -402,27 +410,27 @@ export default function Home({ city }) {
                 Uncompromised Clinical Accuracy & Regulatory Standards
               </h2>
 
-              <p className="mt-4 text-base sm:text-lg text-[#E8D3BC]/90 leading-relaxed">
+              <p className="mt-4 text-base sm:text-lg text-[#B6E2E7]/90 leading-relaxed">
                 Raj Biosisstrictly adheres to international quality protocols. Every equipment installation comes with complete IQ/OQ/PQ validation documentation and certified calibration reports.
               </p>
 
               <div className="mt-8 grid sm:grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-[#E8D3BC]/20 bg-white/5 p-5 backdrop-blur-sm">
+                <div className="rounded-2xl border border-[#B6E2E7]/20 bg-white/5 p-5 backdrop-blur-sm">
                   <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                    <ShieldCheck size={20} className="text-[#C05800]" />
+                    <ShieldCheck size={20} className="text-[#008B9A]" />
                     ISO 13485 & CE Compliance
                   </h4>
-                  <p className="mt-2 text-xs text-[#E8D3BC]/80">
+                  <p className="mt-2 text-xs text-[#B6E2E7]/80">
                     Certified medical device quality management system for diagnostic analyzers.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-[#E8D3BC]/20 bg-white/5 p-5 backdrop-blur-sm">
+                <div className="rounded-2xl border border-[#B6E2E7]/20 bg-white/5 p-5 backdrop-blur-sm">
                   <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Clock size={20} className="text-[#C05800]" />
+                    <Clock size={20} className="text-[#008B9A]" />
                     2-Hour SLA Maintenance
                   </h4>
-                  <p className="mt-2 text-xs text-[#E8D3BC]/80">
+                  <p className="mt-2 text-xs text-[#B6E2E7]/80">
                     Dedicated engineer dispatch team ready for emergency hospital repairs.
                   </p>
                 </div>
@@ -430,24 +438,24 @@ export default function Home({ city }) {
             </div>
 
             <div className="lg:col-span-5">
-              <div className="rounded-3xl border border-[#E8D3BC]/30 bg-gradient-to-br from-white/10 to-white/5 p-8 backdrop-blur-md text-center">
-                <div className="mx-auto flex h-24 w-24 sm:h-28 sm:w-28 flex-col items-center justify-center rounded-full bg-gradient-to-br from-[#E06D00] via-[#C05800] to-[#8C3E00] text-white shadow-2xl shadow-[#C05800]/50 border-2 border-amber-300/40 p-2">
+              <div className="rounded-3xl border border-[#B6E2E7]/30 bg-gradient-to-br from-white/10 to-white/5 p-8 backdrop-blur-md text-center">
+                <div className="mx-auto flex h-24 w-24 sm:h-28 sm:w-28 flex-col items-center justify-center rounded-full bg-gradient-to-br from-[#007684] via-[#008B9A] to-[#006B75] text-white shadow-2xl shadow-[#008B9A]/50 border-2 border-white/30 p-2">
                   <span className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none">
                     100%
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FDFBD4] mt-1">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#E4F8FA] mt-1">
                     Certified
                   </span>
                 </div>
                 <h3 className="mt-6 text-2xl font-bold text-white">
                   Compliance Guarantee
                 </h3>
-                <p className="mt-3 text-sm text-[#E8D3BC] leading-relaxed">
+                <p className="mt-3 text-sm text-[#B6E2E7] leading-relaxed">
                   All instruments tested with traceable reference standards before dispatch to your medical facility.
                 </p>
                 <Link
                   href={makeLink("/contact")}
-                  className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#C05800] !text-white px-8 py-3.5 text-sm font-bold shadow-xl shadow-[#C05800]/40 transition-all hover:bg-[#E06D00] hover:shadow-2xl hover:-translate-y-0.5 border border-amber-400/30"
+                  className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#008B9A] !text-white px-8 py-3.5 text-sm font-bold shadow-xl shadow-[#008B9A]/40 transition-all hover:bg-[#007684] hover:shadow-2xl hover:-translate-y-0.5 border border-white/20"
                 >
                   <span className="!text-white font-bold">Request Inspection Certificate</span>
                   <ArrowRight size={16} className="!text-white" />
@@ -459,7 +467,7 @@ export default function Home({ city }) {
       </section>
 
       {/* ================= TESTIMONIALS ================= */}
-      <section className="section-padding bg-gradient-to-b from-white via-[#FFF9EF] to-[#FDFBD4]">
+      <section className="section-padding bg-gradient-to-b from-white via-[#F4FBFC] to-[#E4F8FA]">
         <div className="container-custom">
           <SectionTitle
             badge="What Our Partners Say"
@@ -472,26 +480,26 @@ export default function Home({ city }) {
             {testimonials.map((t, idx) => (
               <div
                 key={idx}
-                className="flex flex-col justify-between rounded-3xl border border-[#E8D3BC] bg-white p-8 shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="flex flex-col justify-between rounded-3xl border border-[#B6E2E7] bg-white p-8 shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div>
-                  <div className="flex gap-1 text-[#C05800] mb-4">
+                  <div className="flex gap-1 text-[#008B9A] mb-4">
                     {Array.from({ length: t.rating }).map((_, i) => (
                       <span key={i}>★</span>
                     ))}
                   </div>
-                  <p className="text-sm sm:text-base leading-relaxed text-[#5B4634] italic">
+                  <p className="text-sm sm:text-base leading-relaxed text-[#45656A] italic">
                     "{t.quote}"
                   </p>
                 </div>
 
-                <div className="mt-8 border-t border-[#E8D3BC]/60 pt-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3E4D2] text-[#C05800] font-bold text-lg">
+                <div className="mt-8 border-t border-[#B6E2E7]/60 pt-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4F1F4] text-[#008B9A] font-bold text-lg">
                     {t.author.charAt(4) || "D"}
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-[#38240D]">{t.author}</h4>
-                    <p className="text-xs text-[#5B4634]">{t.role} — <span className="text-[#C05800] font-medium">{t.institution}</span></p>
+                    <h4 className="text-base font-bold text-[#10373C]">{t.author}</h4>
+                    <p className="text-xs text-[#45656A]">{t.role} — <span className="text-[#008B9A] font-medium">{t.institution}</span></p>
                   </div>
                 </div>
               </div>
@@ -501,7 +509,7 @@ export default function Home({ city }) {
       </section>
 
       {/* ================= QUICK INQUIRY FORM SECTION ================= */}
-      <section className="section-padding bg-gradient-to-br from-[#FDFBD4] via-white to-[#F3E4D2] border-t border-[#E8D3BC]">
+      <section className="section-padding bg-gradient-to-br from-[#E4F8FA] via-white to-[#D4F1F4] border-t border-[#B6E2E7]">
         <div className="container-custom">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5">
@@ -515,14 +523,14 @@ export default function Home({ city }) {
                 {helplinePhone && (
                   <a
                     href={`tel:${String(helplinePhone).replace(/\s+/g, "")}`}
-                    className="flex items-center gap-4 rounded-2xl border border-[#E8D3BC] bg-white p-4 shadow-sm hover:border-[#C05800]/40 transition-colors"
+                    className="flex items-center gap-4 rounded-2xl border border-[#B6E2E7] bg-white p-4 shadow-sm hover:border-[#008B9A]/40 transition-colors"
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F3E4D2] text-[#C05800] shrink-0">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#D4F1F4] text-[#008B9A] shrink-0">
                       <PhoneCall size={22} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#5B4634]">Direct Helpline</p>
-                      <p className="text-base font-bold text-[#38240D]">{helplinePhone}</p>
+                      <p className="text-xs font-bold text-[#45656A]">Direct Helpline</p>
+                      <p className="text-base font-bold text-[#10373C]">{helplinePhone}</p>
                     </div>
                   </a>
                 )}
@@ -530,14 +538,14 @@ export default function Home({ city }) {
                 {supportEmail && (
                   <a
                     href={`mailto:${supportEmail}`}
-                    className="flex items-center gap-4 rounded-2xl border border-[#E8D3BC] bg-white p-4 shadow-sm hover:border-[#C05800]/40 transition-colors"
+                    className="flex items-center gap-4 rounded-2xl border border-[#B6E2E7] bg-white p-4 shadow-sm hover:border-[#008B9A]/40 transition-colors"
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F3E4D2] text-[#C05800] shrink-0">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#D4F1F4] text-[#008B9A] shrink-0">
                       <Mail size={22} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#5B4634]">Official Email</p>
-                      <p className="text-base font-bold text-[#38240D] break-all">{supportEmail}</p>
+                      <p className="text-xs font-bold text-[#45656A]">Official Email</p>
+                      <p className="text-base font-bold text-[#10373C] break-all">{supportEmail}</p>
                     </div>
                   </a>
                 )}

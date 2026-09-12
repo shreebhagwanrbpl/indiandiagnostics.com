@@ -189,7 +189,7 @@ const getWebsiteDomain = () => {
             return host;
         }
     }
-    return "clinidix.com";
+    return "indiandiagnostics.com";
 };
 
 export default function ProductDetails({ slug }) {
@@ -376,7 +376,7 @@ export default function ProductDetails({ slug }) {
         const loadContact = async () => {
             try {
                 const snap = await getDoc(
-                    doc(db, "websites", "clinidixcom", "pages", "contact")
+                    doc(db, "websites", "indiandiagnosticscom", "pages", "contact")
                 );
                 if (snap.exists()) {
                     setContactInfo(snap.data().contactInfo || []);
@@ -428,12 +428,12 @@ export default function ProductDetails({ slug }) {
             const pageHeight = 297;
             const contentWidth = pageWidth - 2 * margin;
 
-            // Clinidix Theme Colors
-            const colorPrimary = [192, 88, 0];       // #C05800 Brand Orange
-            const colorDark = [56, 36, 13];          // #38240D Deep Brown Text
-            const colorGray = [91, 70, 52];          // #5B4634 Subtitle Text
-            const colorLightBorder = [232, 211, 188];// #E8D3BC Light Border
-            const colorBgWarm = [255, 249, 239];     // #FFF9EF Warm Background
+            //  Theme Colors
+            const colorPrimary = [0, 139, 154];       // #008B9A Brand Teal
+            const colorDark = [16, 55, 60];          // #10373C Primary Dark Text
+            const colorGray = [69, 101, 106];         // #45656A Subtitle Text
+            const colorLightBorder = [182, 226, 231];// #B6E2E7 Light Border
+            const colorBgWarm = [244, 251, 252];     // #F4FBFC Light Background
 
             // 1. HEADER
             let headerLeftOffset = margin;
@@ -656,7 +656,7 @@ export default function ProductDetails({ slug }) {
                 collection(
                     db,
                     "websitesQueries",
-                    "clinidixcom",
+                    "indiandiagnosticscom",
                     "productQueries"
                 ),
                 {
@@ -792,12 +792,12 @@ ${product?.desc}
 
     if (!product) {
         return (
-            <section className="py-10 md:py-20 bg-gradient-to-b from-white to-[#FDBD4]">
+            <section className="py-10 md:py-20 bg-gradient-to-b from-white to-[#D9F3F5]">
 
                 <div className="container-custom">
 
 
-                    <div className="grid lg:grid-cols-2 gap-12">
+                    <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
 
 
                         {/* Image Skeleton */}
@@ -808,8 +808,8 @@ ${product?.desc}
         md:h-[520px]
         rounded-[36px]
         bg-gradient-to-br
-        from-[#F3D8B3]
-        via-[#FDBD4]
+        from-[#C7EBEF]
+        via-[#D9F3F5]
         to-white
         animate-pulse
         "
@@ -827,8 +827,8 @@ ${product?.desc}
           h-12
           w-3/4
           bg-gradient-to-r
-          from-[#F3D8B3]
-          to-[#FDBD4]
+          from-[#C7EBEF]
+          to-[#D9F3F5]
           rounded-xl
           animate-pulse
           mb-8
@@ -844,8 +844,8 @@ ${product?.desc}
                                     className="
             h-6
             bg-gradient-to-r
-            from-[#F3D8B3]
-            to-[#FDBD4]
+            from-[#C7EBEF]
+            to-[#D9F3F5]
             rounded-lg
             animate-pulse
             mb-4
@@ -880,7 +880,7 @@ ${product?.desc}
         md:p-8
         shadow-sm
         border
-        border-[#E8CFA8]
+        border-[#B6E2E7]
         "
                         >
 
@@ -889,8 +889,8 @@ ${product?.desc}
           h-10
           w-48
           bg-gradient-to-r
-          from-[#F3D8B3]
-          to-[#FDBD4]
+          from-[#C7EBEF]
+          to-[#D9F3F5]
           rounded-lg
           animate-pulse
           mb-6
@@ -906,8 +906,8 @@ ${product?.desc}
                                     className="
             h-14
             bg-gradient-to-r
-            from-[#F3D8B3]
-            to-[#FDBD4]
+            from-[#C7EBEF]
+            to-[#D9F3F5]
             rounded-2xl
             animate-pulse
             mb-4
@@ -935,7 +935,7 @@ ${product?.desc}
         md:p-8
         shadow-sm
         border
-        border-[#E8CFA8]
+        border-[#B6E2E7]
         "
                         >
 
@@ -944,8 +944,8 @@ ${product?.desc}
           h-10
           w-60
           bg-gradient-to-r
-          from-[#F3D8B3]
-          to-[#FDBD4]
+          from-[#C7EBEF]
+          to-[#D9F3F5]
           rounded-lg
           animate-pulse
           mb-6
@@ -961,8 +961,8 @@ ${product?.desc}
                                     className="
             h-5
             bg-gradient-to-r
-            from-[#F3D8B3]
-            to-[#FDBD4]
+            from-[#C7EBEF]
+            to-[#D9F3F5]
             rounded
             animate-pulse
             mb-4
@@ -1018,12 +1018,12 @@ ${product?.desc}
   overflow-hidden
   rounded-[28px]
   border
-  border-[#E8D3BC]
+  border-[#B6E2E7]
   bg-gradient-to-b
-  from-[#FFF9EF]
+  from-[#F4FBFC]
   to-white
   shadow-xl
-  shadow-[#C05800]/10
+  shadow-[#008B9A]/10
   sm:h-[420px]
   md:h-[500px]
   lg:h-[540px]
@@ -1041,8 +1041,8 @@ ${product?.desc}
     z-20
     rounded-full
     bg-gradient-to-r
-    from-[#713600]
-    to-[#C05800]
+    from-[#005C66]
+    to-[#008B9A]
     px-4
     py-2
     text-xs
@@ -1093,9 +1093,9 @@ ${product?.desc}
           items-center
           justify-center
           bg-gradient-to-br
-          from-[#F3D8B3]
+          from-[#C7EBEF]
           via-white
-          to-[#FDBD4]
+          to-[#D9F3F5]
           animate-pulse
           "
                                         >
@@ -1106,8 +1106,8 @@ ${product?.desc}
             w-20
             rounded-full
             border-4
-            border-[#E8CFA8]
-            border-t-[#713600]
+            border-[#B6E2E7]
+            border-t-[#005C66]
             animate-spin
             "
                                             />
@@ -1130,10 +1130,10 @@ ${product?.desc}
                                         />
                                     ) : (
                                         <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center">
-                                            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white border border-[#E8CFA8] text-[#C05800] shadow-md">
+                                            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white border border-[#B6E2E7] text-[#008B9A] shadow-md">
                                                 <Microscope size={38} />
                                             </div>
-                                            <span className="mt-4 text-sm font-bold uppercase tracking-wider text-[#713600]">
+                                            <span className="mt-4 text-sm font-bold uppercase tracking-wider text-[#005C66]">
                                                 {product.category || "Biomedical Analyzer"}
                                             </span>
                                         </div>
@@ -1155,8 +1155,8 @@ ${product?.desc}
                                     }}
                                     className={`group relative h-20 w-20 overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
       ${selectedMedia === "image" && selectedImage === img
-                                            ? "border-[#C05800] shadow-lg shadow-[#C05800]/20"
-                                            : "border-[#E8CFA8] hover:border-[#C05800]"
+                                            ? "border-[#008B9A] shadow-lg shadow-[#008B9A]/20"
+                                            : "border-[#B6E2E7] hover:border-[#008B9A]"
                                         }`}
                                 >
                                     <Image
@@ -1178,8 +1178,8 @@ ${product?.desc}
                                     className={`group flex h-20 w-20 flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
 
       ${selectedMedia === "video"
-                                            ? "border-#E8CFA8 bg-#E8CFA80 shadow-lg shadow-#E8CFA8"
-                                            : "border-#E8CFA8 hover:border-#E8CFA8 hover:bg-#E8CFA80"
+                                            ? "border-[#B6E2E7] bg-[#B6E2E7]/20 shadow-lg shadow-[#B6E2E7]"
+                                            : "border-[#B6E2E7] hover:border-[#008B9A] hover:bg-[#B6E2E7]/20"
                                         }`}
                                 >
 
@@ -1206,7 +1206,7 @@ ${product?.desc}
                                     href={product.pdf}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group flex h-20 w-20 flex-col items-center justify-center rounded-2xl border-2 border-#E8CFA8 transition-all duration-300 hover:-translate-y-1 hover:border-#E8CFA8 hover:bg-#E8CFA80 hover:shadow-lg"
+                                    className="group flex h-20 w-20 flex-col items-center justify-center rounded-2xl border-2 border-[#B6E2E7] transition-all duration-300 hover:-translate-y-1 hover:border-[#008B9A] hover:bg-[#B6E2E7]/20 hover:shadow-lg"
                                 >
 
                                     <span className="text-2xl">
@@ -1245,15 +1245,15 @@ ${product?.desc}
             inline-flex
             rounded-full
             border
-            border-[#C05800]/30
-            bg-[#FFF9EF]
+            border-[#008B9A]/30
+            bg-[#F4FBFC]
             px-4
             py-1.5
             text-xs
             font-bold
             uppercase
             tracking-wider
-            text-[#C05800]
+            text-[#008B9A]
             shadow-sm
             "
                                 >
@@ -1269,7 +1269,7 @@ ${product?.desc}
             text-2xl
             font-black
             leading-tight
-            text-[#38240D]
+            text-[#10373C]
             sm:text-3xl
             md:text-4xl
             lg:text-5xl
@@ -1283,7 +1283,7 @@ ${product?.desc}
                                 {/* Dynamic Price & Availability from Admin (Commented out as requested) */}
                                 {/* {product.price && String(product.price).trim() && (
                                     <div className="mt-3.5 flex items-center gap-3">
-                                        <span className="text-2xl sm:text-3xl font-black text-[#C05800]">
+                                        <span className="text-2xl sm:text-3xl font-black text-[#008B9A]">
                                             ₹ {product.price}
                                         </span>
                                         <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-700">
@@ -1297,7 +1297,7 @@ ${product?.desc}
                                     <button
                                         onClick={handleDownloadBrochure}
                                         disabled={downloadingBrochure}
-                                        className="group inline-flex items-center gap-2.5 rounded-2xl bg-[#C05800] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#C05800]/25 transition-all duration-300 hover:-translate-y-1 hover:bg-[#E06D00] hover:shadow-xl hover:shadow-[#C05800]/35 disabled:cursor-not-allowed disabled:opacity-75"
+                                        className="group inline-flex items-center gap-2.5 rounded-2xl bg-[#008B9A] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#008B9A]/25 transition-all duration-300 hover:-translate-y-1 hover:bg-[#007684] hover:shadow-xl hover:shadow-[#008B9A]/35 disabled:cursor-not-allowed disabled:opacity-75"
                                     >
                                         {downloadingBrochure ? (
                                             <>
@@ -1342,17 +1342,17 @@ ${product?.desc}
             justify-center
             rounded-full
             border
-            border-[#E8CFA8]
+            border-[#B6E2E7]
             bg-white
-            text-[#713600]
+            text-[#005C66]
             shadow-lg
-            shadow-[#E8CFA8]
+            shadow-[#B6E2E7]
             transition-all
             duration-300
             hover:-translate-y-1
-            hover:border-[#C05800]
-            hover:bg-[#FDBD4]
-            hover:text-[#C05800]
+            hover:border-[#008B9A]
+            hover:bg-[#D9F3F5]
+            hover:text-[#008B9A]
             hover:shadow-xl
             "
                                     aria-label="Share Product"
@@ -1384,11 +1384,11 @@ ${product?.desc}
                 overflow-hidden
                 rounded-2xl
                 border
-                border-[#E8CFA8]
+                border-[#B6E2E7]
                 bg-white
                 p-2
                 shadow-2xl
-                shadow-[#E8CFA8]
+                shadow-[#B6E2E7]
                 "
                                     >
 
@@ -1405,14 +1405,14 @@ ${product?.desc}
                     px-4
                     py-3
                     text-left
-                    text-[#6B5845]
+                    text-[#567478]
                     transition
-                    hover:bg-[#FDBD4]
-                    hover:text-[#713600]
+                    hover:bg-[#D9F3F5]
+                    hover:text-[#005C66]
                     "
                                         >
 
-                                            <FaLink className="text-[#713600]" />
+                                            <FaLink className="text-[#005C66]" />
 
                                             Copy Link
 
@@ -1432,14 +1432,14 @@ ${product?.desc}
                     px-4
                     py-3
                     text-left
-                    text-[#6B5845]
+                    text-[#567478]
                     transition
-                    hover:bg-[#FDBD4]
-                    hover:text-[#713600]
+                    hover:bg-[#D9F3F5]
+                    hover:text-[#005C66]
                     "
                                         >
 
-                                            <FaWhatsapp className="text-[#713600]" />
+                                            <FaWhatsapp className="text-[#005C66]" />
 
                                             WhatsApp
 
@@ -1459,14 +1459,14 @@ ${product?.desc}
                     px-4
                     py-3
                     text-left
-                    text-[#6B5845]
+                    text-[#567478]
                     transition
-                    hover:bg-[#FDBD4]
-                    hover:text-[#713600]
+                    hover:bg-[#D9F3F5]
+                    hover:text-[#005C66]
                     "
                                         >
 
-                                            <FaFacebook className="text-[#C05800]" />
+                                            <FaFacebook className="text-[#008B9A]" />
 
                                             Facebook
 
@@ -1486,14 +1486,14 @@ ${product?.desc}
                     px-4
                     py-3
                     text-left
-                    text-[#6B5845]
+                    text-[#567478]
                     transition
-                    hover:bg-[#FDBD4]
-                    hover:text-[#713600]
+                    hover:bg-[#D9F3F5]
+                    hover:text-[#005C66]
                     "
                                         >
 
-                                            <FaInstagram className="text-[#C05800]" />
+                                            <FaInstagram className="text-[#008B9A]" />
 
                                             Instagram
 
@@ -1516,11 +1516,11 @@ ${product?.desc}
       mt-6
       rounded-[30px]
       border
-      border-[#E8CFA8]
+      border-[#B6E2E7]
       bg-white
       p-6
       shadow-xl
-      shadow-[#E8CFA8]/30
+      shadow-[#B6E2E7]/30
       md:mt-8
       md:p-8
       "
@@ -1531,7 +1531,7 @@ ${product?.desc}
           mb-6
           text-2xl
           font-bold
-          text-[#38240D]
+          text-[#10373C]
           "
                                 >
                                     Product Specifications
@@ -1544,16 +1544,16 @@ ${product?.desc}
                                             className="
                     rounded-2xl
                     border
-                    border-[#E8CFA8]
+                    border-[#B6E2E7]
                     bg-gradient-to-br
-                    from-[#FFF9EF]
+                    from-[#F4FBFC]
                     to-white
                     p-4
                     transition-all
                     duration-300
-                    hover:border-[#C05800]
+                    hover:border-[#008B9A]
                     hover:shadow-lg
-                    hover:shadow-[#C05800]/10
+                    hover:shadow-[#008B9A]/10
                     "
                                         >
                                             <p
@@ -1562,7 +1562,7 @@ ${product?.desc}
                       font-bold
                       uppercase
                       tracking-wider
-                      text-[#C05800]
+                      text-[#008B9A]
                       "
                                             >
                                                 {item.label}
@@ -1573,7 +1573,7 @@ ${product?.desc}
                       mt-1.5
                       text-base
                       font-bold
-                      text-[#38240D]
+                      text-[#10373C]
                       break-words
                       "
                                             >
@@ -1592,21 +1592,22 @@ ${product?.desc}
 
                 {/* Description + Form */}
 
-                <div className="mt-16">
-                    <div className="grid grid-cols-1 lg:grid-cols-[500px_1fr] xl:grid-cols-[600px_1fr] gap-6 md:gap-8">
+                <div className="mt-3 md:mt-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-[500px_1fr] xl:grid-cols-[600px_1fr] gap-4 md:gap-5">
 
                         {/* Quote Form */}
 
                         <div
                             className="
   h-fit
+  lg:-mt-[440px]
   rounded-[32px]
   border
-  border-[#E8CFA8]
+  border-[#B6E2E7]
   bg-white
   p-5
   shadow-xl
-  shadow-[#E8CFA8]
+  shadow-[#B6E2E7]
   lg:sticky
   lg:top-24
   sm:p-6
@@ -1621,13 +1622,13 @@ ${product?.desc}
       inline-flex
       rounded-full
       bg-gradient-to-r
-      from-[#FDBD4]
-      to-[#F3D8B3]
+      from-[#D9F3F5]
+      to-[#C7EBEF]
       px-4
       py-2
       text-sm
       font-semibold
-      text-[#713600]
+      text-[#005C66]
       "
                             >
 
@@ -1642,7 +1643,7 @@ ${product?.desc}
       mt-5
       text-2xl
       font-black
-      text-[#38240D]
+      text-[#10373C]
       md:text-3xl
       "
                             >
@@ -1657,7 +1658,7 @@ ${product?.desc}
                                 className="
       mt-3
       leading-7
-      text-[#6B5845]
+      text-[#567478]
       "
                             >
 
@@ -1667,7 +1668,7 @@ ${product?.desc}
                                     className="
           ml-2
           font-semibold
-          text-[#C05800]
+          text-[#008B9A]
           "
                                 >
 
@@ -1705,19 +1706,19 @@ ${product?.desc}
           w-full
           rounded-2xl
           border
-          border-[#E8CFA8]
-          bg-[#FDBD4]
+          border-[#B6E2E7]
+          bg-[#D9F3F5]
           px-5
           py-4
-          text-[#38240D]
+          text-[#10373C]
           outline-none
           transition-all
           duration-300
-          placeholder:text-[#8A735A]
-          focus:border-[#C05800]
+          placeholder:text-[#5F7D81]
+          focus:border-[#008B9A]
           focus:bg-white
           focus:ring-4
-          focus:ring-[#F3D8B3]
+          focus:ring-[#C7EBEF]
           "
                                 />
 
@@ -1740,19 +1741,19 @@ ${product?.desc}
           w-full
           rounded-2xl
           border
-          border-[#E8CFA8]
-          bg-[#FDBD4]
+          border-[#B6E2E7]
+          bg-[#D9F3F5]
           px-5
           py-4
-          text-[#38240D]
+          text-[#10373C]
           outline-none
           transition-all
           duration-300
-          placeholder:text-[#8A735A]
-          focus:border-[#C05800]
+          placeholder:text-[#5F7D81]
+          focus:border-[#008B9A]
           focus:bg-white
           focus:ring-4
-          focus:ring-[#F3D8B3]
+          focus:ring-[#C7EBEF]
           "
                                 />
 
@@ -1776,19 +1777,19 @@ ${product?.desc}
           w-full
           rounded-2xl
           border
-          border-[#E8CFA8]
-          bg-[#FDBD4]
+          border-[#B6E2E7]
+          bg-[#D9F3F5]
           px-5
           py-4
-          text-[#38240D]
+          text-[#10373C]
           outline-none
           transition-all
           duration-300
-          placeholder:text-[#8A735A]
-          focus:border-[#C05800]
+          placeholder:text-[#5F7D81]
+          focus:border-[#008B9A]
           focus:bg-white
           focus:ring-4
-          focus:ring-[#F3D8B3]
+          focus:ring-[#C7EBEF]
           "
                                 />
 
@@ -1804,20 +1805,20 @@ ${product?.desc}
           w-full
           rounded-2xl
           bg-gradient-to-r
-          from-[#713600]
-          to-[#C05800]
+          from-[#005C66]
+          to-[#008B9A]
           py-4
           font-semibold
           text-white
           shadow-lg
-          shadow-[#E8CFA8]
+          shadow-[#B6E2E7]
           transition-all
           duration-300
           hover:-translate-y-1
-          hover:from-[#38240D]
-          hover:to-[#713600]
+          hover:from-[#10373C]
+          hover:to-[#005C66]
           hover:shadow-xl
-          hover:shadow-[#C05800]
+          hover:shadow-[#008B9A]
           disabled:cursor-not-allowed
           disabled:opacity-70
           "
@@ -1834,7 +1835,7 @@ ${product?.desc}
                         </div>
                         {/* Description */}
 
-                        <div className="rounded-[32px] border border-#E8CFA8 bg-white p-5 shadow-xl shadow-#E8CFA8-100 sm:p-6 md:p-10">
+                        <div className="rounded-[32px] border border-[#B6E2E7] bg-white p-5 shadow-xl shadow-[#B6E2E7]/40 sm:p-6 md:p-8">
 
                             {/* Header */}
 
@@ -1843,13 +1844,13 @@ ${product?.desc}
   inline-flex
   rounded-full
   bg-gradient-to-r
-  from-[#FDBD4]
-  to-[#F3D8B3]
+  from-[#D9F3F5]
+  to-[#C7EBEF]
   px-4
   py-2
   text-sm
   font-semibold
-  text-[#713600]
+  text-[#005C66]
   "
                             >
 
@@ -1863,7 +1864,7 @@ ${product?.desc}
   mt-5
   text-2xl
   font-black
-  text-[#38240D]
+  text-[#10373C]
   md:text-3xl
   "
                             >
@@ -1878,7 +1879,7 @@ ${product?.desc}
   mt-6
   text-base
   leading-8
-  text-[#6B5845]
+  text-[#567478]
   md:text-lg
   md:leading-9
   "
@@ -1889,42 +1890,18 @@ ${product?.desc}
                                     "No description available."}
 
                             </p>
-                            {/* Specifications Table */}
-                            {specificationsList.length > 0 && (
-                                <div className="mt-10 overflow-x-auto rounded-2xl border border-[#E8D3BC]">
-                                    <table className="w-full border-collapse">
-                                        <tbody>
-                                            {specificationsList.map((item, index) => (
-                                                <tr
-                                                    key={index}
-                                                    className="border-b border-[#E8D3BC]/60 last:border-b-0 transition hover:bg-[#FFF9EF]"
-                                                >
-                                                    <td className="w-1/3 bg-[#FFF9EF]/80 px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#C05800]">
-                                                        {item.label}
-                                                    </td>
-                                                    <td className="px-5 py-3.5 text-sm font-semibold text-[#38240D]">
-                                                        {item.value}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-
                             {/* SEO Content */}
 
                             <div
                                 className="
-  mt-12
+  mt-6
   rounded-[32px]
   border
-  border-[#E8CFA8]
+  border-[#B6E2E7]
   bg-white
   p-6
   shadow-xl
-  shadow-[#E8CFA8]
+  shadow-[#B6E2E7]
   md:p-10
   "
                             >
@@ -1934,13 +1911,13 @@ ${product?.desc}
       inline-flex
       rounded-full
       bg-gradient-to-r
-      from-[#FDBD4]
-      to-[#F3D8B3]
+      from-[#D9F3F5]
+      to-[#C7EBEF]
       px-4
       py-2
       text-sm
       font-semibold
-      text-[#713600]
+      text-[#005C66]
       "
                                 >
 
@@ -1950,7 +1927,7 @@ ${product?.desc}
 
 
 
-                                <div className="mt-8 space-y-8">
+                                <div className="mt-5 space-y-4">
 
 
                                     {[
@@ -1993,16 +1970,16 @@ ${product?.desc}
                                             className="
                 rounded-2xl
                 border
-                border-[#E8CFA8]
+                border-[#B6E2E7]
                 bg-gradient-to-br
-                from-[#FDBD4]
+                from-[#D9F3F5]
                 to-white
-                p-6
+                p-5
                 transition-all
                 duration-300
-                hover:border-[#C05800]
+                hover:border-[#008B9A]
                 hover:shadow-lg
-                hover:shadow-[#E8CFA8]
+                hover:shadow-[#B6E2E7]
                 "
                                         >
 
@@ -2011,7 +1988,7 @@ ${product?.desc}
                                                 className="
                   text-2xl
                   font-bold
-                  text-[#38240D]
+                  text-[#10373C]
                   "
                                             >
 
@@ -2025,7 +2002,7 @@ ${product?.desc}
                                                 className="
                   mt-4
                   leading-8
-                  text-[#6B5845]
+                  text-[#567478]
                   "
                                             >
 
@@ -2052,11 +2029,11 @@ ${product?.desc}
   mt-12
   rounded-[32px]
   border
-  border-[#E8CFA8]
+  border-[#B6E2E7]
   bg-white
   p-6
   shadow-xl
-  shadow-[#E8CFA8]
+  shadow-[#B6E2E7]
   md:p-10
   "
                             >
@@ -2066,13 +2043,13 @@ ${product?.desc}
       inline-flex
       rounded-full
       bg-gradient-to-r
-      from-[#FDBD4]
-      to-[#F3D8B3]
+      from-[#D9F3F5]
+      to-[#C7EBEF]
       px-4
       py-2
       text-sm
       font-semibold
-      text-[#713600]
+      text-[#005C66]
       "
                                 >
 
@@ -2088,7 +2065,7 @@ ${product?.desc}
       text-2xl
       md:text-3xl
       font-black
-      text-[#38240D]
+      text-[#10373C]
       "
                                 >
 
@@ -2098,7 +2075,7 @@ ${product?.desc}
 
 
 
-                                <div className="mt-8 space-y-5">
+                                <div className="mt-5 space-y-3">
 
 
                                     {[
@@ -2145,17 +2122,17 @@ ${product?.desc}
                                             className="
                 rounded-2xl
                 border
-                border-[#E8CFA8]
+                border-[#B6E2E7]
                 bg-gradient-to-br
-                from-[#FDBD4]
+                from-[#D9F3F5]
                 to-white
-                p-6
+                p-5
                 transition-all
                 duration-300
                 hover:-translate-y-1
-                hover:border-[#C05800]
+                hover:border-[#008B9A]
                 hover:shadow-lg
-                hover:shadow-[#E8CFA8]
+                hover:shadow-[#B6E2E7]
                 "
                                         >
 
@@ -2164,7 +2141,7 @@ ${product?.desc}
                                                 className="
                   text-lg
                   font-bold
-                  text-[#38240D]
+                  text-[#10373C]
                   "
                                             >
 
@@ -2178,7 +2155,7 @@ ${product?.desc}
                                                 className="
                   mt-3
                   leading-8
-                  text-[#6B5845]
+                  text-[#567478]
                   "
                                             >
 

@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc } from "@/lib/client-api";
+import { db } from "@/lib/client-api";
 import PageBanner from "@/components/PageBanner";
 import SectionTitle from "@/components/SectionTitle";
 import ContactForm from "@/components/ContactForm";
@@ -55,40 +55,41 @@ export default function ContactPage() {
       : null;
 
   useEffect(() => {
-    const loadContact = async () => {
+    let isMounted = true;
+    const loadData = async () => {
       try {
-        const snap = await getDoc(
-          doc(db, "websites", "indiandiagnosticscom", "pages", "contact")
-        );
-        if (snap.exists()) {
-          setContactInfo(snap.data().contactInfo || []);
+        const promises = [
+          getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "contact")),
+        ];
+        if (currentDistrict) {
+          promises.push(
+            getDoc(doc(db, "websites", "indiandiagnosticscom", "districts", currentDistrict))
+          );
+        }
+
+        const [contactSnap, distSnap] = await Promise.all(promises);
+
+        if (!isMounted) return;
+
+        if (contactSnap && contactSnap.exists()) {
+          setContactInfo(contactSnap.data().contactInfo || []);
+        }
+
+        if (distSnap && distSnap.exists()) {
+          setDistrictData(distSnap.data());
         }
       } catch (err) {
         console.error("Error loading contact data:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    loadContact();
-  }, []);
+    loadData();
 
-  useEffect(() => {
-    const loadDistrict = async () => {
-      if (!currentDistrict) return;
-      try {
-        const snap = await getDoc(
-          doc(db, "websites", "indiandiagnosticscom", "districts", currentDistrict)
-        );
-        if (snap.exists()) {
-          setDistrictData(snap.data());
-        }
-      } catch (err) {
-        console.error("Error loading district data:", err);
-      }
+    return () => {
+      isMounted = false;
     };
-
-    loadDistrict();
   }, [currentDistrict]);
 
   const getFieldIcon = (label = "") => {
@@ -136,7 +137,7 @@ export default function ContactPage() {
       <section className="section-padding bg-gradient-to-b from-white via-[#F4FBFC] to-[#E4F8FA]">
         <div className="container-custom">
           <div className="grid lg:grid-cols-12 gap-12 items-start">
-            {/* Left Contact Cards - 100% Dynamic from Firestore */}
+            {/* Left Contact Cards - 100% Dynamic from MongoDB */}
             <div className="lg:col-span-5 space-y-6">
               <SectionTitle
                 badge="Reach Us Directly"

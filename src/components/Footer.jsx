@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc } from "@/lib/client-api";
+import { db } from "@/lib/client-api";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -49,33 +49,39 @@ export default function Footer() {
 
     const loadData = async () => {
       try {
-        // 1. Fetch Contact Info
-        try {
-          const snap = await getDoc(
-            doc(db, "websites", "indiandiagnosticscom", "pages", "contact")
+        const promises = [
+          getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "contact")),
+          fetchAllDynamicProducts(),
+        ];
+        if (district) {
+          promises.push(
+            getDoc(doc(db, "websites", "indiandiagnosticscom", "districts", district))
           );
-          if (isMounted && snap.exists()) {
-            setContactInfo(snap.data().contactInfo || []);
-          }
-        } catch (contactErr) {
-          console.error("Error loading footer contact:", contactErr);
         }
 
-        // 2. Fetch Dynamic Product Categories
-        try {
-          const prods = await fetchAllDynamicProducts();
-          if (isMounted && Array.isArray(prods) && prods.length > 0) {
-            const catSet = new Set();
-            prods.forEach((p) => {
-              if (p.category && String(p.category).trim() && String(p.category).trim() !== "All Categories") {
-                catSet.add(String(p.category).trim());
-              }
-            });
-            setCategories(Array.from(catSet));
-          }
-        } catch (prodErr) {
-          console.error("Error loading footer categories:", prodErr);
+        const [contactSnap, prods, distSnap] = await Promise.all(promises);
+
+        if (!isMounted) return;
+
+        if (contactSnap && contactSnap.exists()) {
+          setContactInfo(contactSnap.data().contactInfo || []);
         }
+
+        if (Array.isArray(prods) && prods.length > 0) {
+          const catSet = new Set();
+          prods.forEach((p) => {
+            if (p.category && String(p.category).trim() && String(p.category).trim() !== "All Categories") {
+              catSet.add(String(p.category).trim());
+            }
+          });
+          setCategories(Array.from(catSet));
+        }
+
+        if (distSnap && distSnap.exists()) {
+          setDistrictData(distSnap.data());
+        }
+      } catch (err) {
+        console.error("Error loading footer data:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -86,29 +92,9 @@ export default function Footer() {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    const loadDistrict = async () => {
-      if (!district) return;
-
-      try {
-        const snap = await getDoc(
-          doc(db, "websites", "indiandiagnosticscom", "districts", district)
-        );
-
-        if (snap.exists()) {
-          setDistrictData(snap.data());
-        }
-      } catch (err) {
-        console.error("Error loading footer district:", err);
-      }
-    };
-
-    loadDistrict();
   }, [district]);
 
-  // Extract phone numbers flexibly from Firestore contactInfo
+  // Extract phone numbers flexibly from MongoDB contactInfo
   const phoneItems = contactInfo.filter((item) => {
     const l = (item?.label || "").toLowerCase();
     return (
@@ -159,42 +145,11 @@ export default function Footer() {
     ? `${districtData.district}, ${districtData.state}, India`
     : rawAddress;
 
-  // Fallback list of top categories if database has none yet
+  // Dynamic categories only — no static fake categories fallback
   const displayCategories = useMemo(() => {
     if (categories.length > 0) return categories.slice(0, 6);
-    return [
-      "Diagnostic Analyzers",
-      "Molecular Diagnostics",
-      "Hospital & ICU Gear",
-      "Laboratory Equipment",
-      "Reagents & Consumables",
-    ];
+    return [];
   }, [categories]);
-
-  if (loading) {
-    return (
-      <footer className="border-t border-[#B6E2E7] bg-[#E4F8FA]">
-        <div className="container-custom py-16">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i}>
-                <div className="mb-6 h-8 w-40 animate-pulse rounded bg-[#CDEDF0]" />
-                {[...Array(5)].map((_, j) => (
-                  <div
-                    key={j}
-                    className="mb-4 h-5 animate-pulse rounded bg-[#D4F1F4]"
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="mt-12 border-t border-[#B6E2E7] pt-6">
-            <div className="h-5 w-72 animate-pulse rounded bg-[#CDEDF0]" />
-          </div>
-        </div>
-      </footer>
-    );
-  }
 
   return (
     <footer className="border-t border-[#B6E2E7] bg-gradient-to-b from-white via-[#F4FBFC] to-[#E4F8FA]">
@@ -299,7 +254,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Contact Info - Purely Dynamic from Firestore */}
+          {/* Contact Info - Purely Dynamic from MongoDB */}
           <div>
             <h3 className="mb-5 text-lg font-bold text-[#10373C]">
               Contact Info

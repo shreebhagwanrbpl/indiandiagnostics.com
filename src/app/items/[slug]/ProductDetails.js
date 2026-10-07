@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { fallbackProducts, makeSlug } from "@/data/productsData";
+import { makeSlug } from "@/data/productsData";
 import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
 
 import {
@@ -21,8 +22,8 @@ import {
     getDoc,
     addDoc,
     collection,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+} from "@/lib/client-api";
+import { db } from "@/lib/client-api";
 
 const loadImageBase64 = async (src) => {
     try {
@@ -194,6 +195,7 @@ const getWebsiteDomain = () => {
 
 export default function ProductDetails({ slug }) {
     const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedImage, setSelectedImage] = useState("");
     const [selectedMedia, setSelectedMedia] = useState("image");
@@ -240,7 +242,6 @@ export default function ProductDetails({ slug }) {
         if (product.category) addSpec("Category", product.category);
         if (product.subCategory) addSpec("Sub Category", product.subCategory);
         if (product.categoryProductId) addSpec("Product ID", product.categoryProductId);
-        // if (product.price && String(product.price).trim()) addSpec("Price", `₹ ${product.price}`);
 
         // Parse parameters string if given in admin
         if (product.parameters && typeof product.parameters === "string") {
@@ -301,34 +302,25 @@ export default function ProductDetails({ slug }) {
         city.slice(1);
 
     useEffect(() => {
+        let isMounted = true;
         const loadProduct = async () => {
             try {
-                const allProducts = await fetchAllDynamicProducts();
+                const [allProducts, contactSnap] = await Promise.all([
+                    fetchAllDynamicProducts(),
+                    getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "contact")),
+                ]);
 
-                let found = allProducts.find(
+                if (!isMounted) return;
+
+                if (contactSnap && contactSnap.exists()) {
+                    setContactInfo(contactSnap.data().contactInfo || []);
+                }
+
+                const found = (allProducts || []).find(
                     (p) => p.slug === slug || makeSlug(p.title) === slug || p.id === slug
                 );
 
-                // Fallback search in fallbackProducts
-                if (!found) {
-                    found = fallbackProducts.find(
-                        (p) => p.slug === slug || makeSlug(p.title) === slug || p.id === slug
-                    );
-                }
-
-                // Ultimate fallback so PDP never breaks
-                if (!found && fallbackProducts.length > 0) {
-                    const prettyTitle = slug
-                        ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-                        : "Biomedical Equipment";
-                    found = {
-                        ...fallbackProducts[0],
-                        title: prettyTitle,
-                        slug: slug || "biomedical-equipment",
-                    };
-                }
-
-                setProduct(found);
+                setProduct(found || null);
 
                 if (found) {
                     const mainImg =
@@ -341,52 +333,18 @@ export default function ProductDetails({ slug }) {
                     setSelectedMedia("image");
                 }
             } catch (error) {
-                console.error("Error loading product from Firestore, using fallback:", error);
-                let found = fallbackProducts.find(
-                    (p) => p.slug === slug || makeSlug(p.title) === slug || p.id === slug
-                );
-                if (!found && fallbackProducts.length > 0) {
-                    const prettyTitle = slug
-                        ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-                        : "Biomedical Equipment";
-                    found = {
-                        ...fallbackProducts[0],
-                        title: prettyTitle,
-                        slug: slug || "biomedical-equipment",
-                    };
-                }
-                setProduct(found);
-                if (found) {
-                    const mainImg =
-                        (Array.isArray(found.images) && found.images[0]) ||
-                        found.image ||
-                        found.imgUrl ||
-                        found.imageUrl ||
-                        "/logo.png";
-                    setSelectedImage(mainImg);
-                    setSelectedMedia("image");
-                }
+                console.error("Error loading product from API:", error);
+                if (isMounted) setProduct(null);
+            } finally {
+                if (isMounted) setLoading(false);
             }
         };
 
         loadProduct();
-    }, [slug]);
-
-    useEffect(() => {
-        const loadContact = async () => {
-            try {
-                const snap = await getDoc(
-                    doc(db, "websites", "indiandiagnosticscom", "pages", "contact")
-                );
-                if (snap.exists()) {
-                    setContactInfo(snap.data().contactInfo || []);
-                }
-            } catch (err) {
-                console.error("Error loading contact info in details:", err);
-            }
+        return () => {
+            isMounted = false;
         };
-        loadContact();
-    }, []);
+    }, [slug]);
 
     const handleDownloadBrochure = async () => {
         if (!product) return;
@@ -790,13 +748,10 @@ ${product?.desc}
             document.removeEventListener("mousedown", close);
     }, []);
 
-    if (!product) {
+    if (loading) {
         return (
             <section className="py-10 md:py-20 bg-gradient-to-b from-white to-[#D9F3F5]">
-
                 <div className="container-custom">
-
-
                     <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
 
 
@@ -985,6 +940,30 @@ ${product?.desc}
             </section>
         );
     }
+
+    if (!product) {
+        return (
+            <section className="py-20 min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-white to-[#E4F8FA]">
+                <div className="container-custom text-center max-w-lg">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-[#D4F1F4] text-[#008B9A] mb-6">
+                        <span className="text-3xl font-black">!</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-[#10373C]">Equipment Not Found</h2>
+                    <p className="mt-3 text-sm text-[#45656A] leading-relaxed">
+                        The diagnostic instrument you are looking for is either unavailable or has been updated in our catalog.
+                    </p>
+                    <Link
+                        href="/items"
+                        className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-[#008B9A] px-8 py-4 text-sm font-bold text-white shadow-lg hover:bg-[#005C66] transition-all"
+                    >
+                        <span>Browse Full Catalog</span>
+                        <span>→</span>
+                    </Link>
+                </div>
+            </section>
+        );
+    }
+
     return (
         <section className="py-10 md:py-20 bg-slate-50">
             <script

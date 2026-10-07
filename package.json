@@ -2,6 +2,7 @@
   "name": "indiandiagnosticscom",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,8 +10,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "firebase": "^12.15.0",
-    "firebase-admin": "^14.0.0",
     "framer-motion": "^12.40.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.18.0",

@@ -126,7 +126,7 @@ export default function HeroCarousel({
   const dbSlides = parseMediaList(homeData);
   const slides = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
 
-  // ONLY Firestore/admin data supplies copy.
+  // ONLY MongoDB/admin data supplies copy.
   // There is intentionally NO static fallback for these four fields.
   const heroTitle = homeData?.title?.trim() || "";
   const heroDescription = homeData?.description?.trim() || "";

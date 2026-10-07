@@ -47,7 +47,7 @@ function ProductsContent({ city }) {
           setProducts(Array.isArray(fetched) ? fetched : []);
         }
       } catch (err) {
-        console.error("Error loading dynamic products from Firestore:", err);
+        console.error("Error loading dynamic products from MongoDB:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -55,14 +55,14 @@ function ProductsContent({ city }) {
 
     loadInitialProducts();
 
-    // Subscribe to real-time catalog changes from Firestore
+    // Subscribe to real-time catalog changes from MongoDB
     const unsubscribe = subscribeToCatalog((updatedCatalog) => {
       if (isMounted && Array.isArray(updatedCatalog)) {
         const normalized = updatedCatalog
           .map((item) => normalizeProduct(item))
           .filter(Boolean);
 
-        // Dynamic catalog only — empty Firestore catalog stays empty.
+        // Dynamic catalog only — empty MongoDB catalog stays empty.
         setProducts(normalized);
       }
     });

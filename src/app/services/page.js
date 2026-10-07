@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc } from "@/lib/client-api";
+import { db } from "@/lib/client-api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import PageBanner from "@/components/PageBanner";
@@ -78,11 +78,9 @@ export default function ServicesPage() {
   ];
 
   useEffect(() => {
+    let isMounted = true;
     const fetchServicesAndContact = async () => {
       try {
-        // Read the services for the website currently being viewed.
-        // Example: globalhealthcart.com -> globalhealthcartcom
-        // localhost development intentionally uses globalhealthcartcom.
         const hostname =
           typeof window !== "undefined" ? window.location.hostname : "";
         const websiteId =
@@ -95,8 +93,10 @@ export default function ServicesPage() {
           getDoc(doc(db, "websites", websiteId, "pages", "contact")),
         ]);
 
-        // Services are 100% Firebase driven. No static fallback is used.
-        if (servicesSnap.exists()) {
+        if (!isMounted) return;
+
+        // Services are 100% Admin API driven. No static fallback is used.
+        if (servicesSnap && servicesSnap.exists()) {
           const dbServices = Array.isArray(servicesSnap.data().services)
             ? servicesSnap.data().services
               .filter(
@@ -120,17 +120,20 @@ export default function ServicesPage() {
           setServices([]);
         }
 
-        if (contactSnap.exists()) {
+        if (contactSnap && contactSnap.exists()) {
           setContactInfo(contactSnap.data().contactInfo || []);
         }
       } catch (error) {
         console.error("Error loading services/contact data:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchServicesAndContact();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Dynamically extract emergency helpline phone number

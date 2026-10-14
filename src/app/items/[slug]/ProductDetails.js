@@ -971,11 +971,10 @@ export default function ProductDetails({ slug, initialProduct = null, initialCon
                                             setSelectedImage(img);
                                             setSelectedMedia("image");
                                         }}
-                                        className={`group relative h-18 w-18 overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
-                                            selectedMedia === "image" && selectedImage === img
+                                        className={`group relative h-18 w-18 overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${selectedMedia === "image" && selectedImage === img
                                                 ? "border-[#008B9A] ring-2 ring-[#008B9A]/30 shadow-md"
                                                 : "border-[#B6E2E7] hover:border-[#008B9A]"
-                                        }`}
+                                            }`}
                                     >
                                         <Image
                                             src={img}
@@ -991,11 +990,10 @@ export default function ProductDetails({ slug, initialProduct = null, initialCon
                                     <button
                                         type="button"
                                         onClick={() => setSelectedMedia("video")}
-                                        className={`group flex h-18 w-18 flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
-                                            selectedMedia === "video"
+                                        className={`group flex h-18 w-18 flex-col items-center justify-center rounded-2xl border-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${selectedMedia === "video"
                                                 ? "border-[#008B9A] bg-[#008B9A]/10 ring-2 ring-[#008B9A]/30"
                                                 : "border-[#B6E2E7] hover:border-[#008B9A] bg-white"
-                                        }`}
+                                            }`}
                                     >
                                         <FaPlay size={18} className="text-[#008B9A]" />
                                         <span className="mt-1 text-[10px] font-bold text-[#10373C]">Video</span>

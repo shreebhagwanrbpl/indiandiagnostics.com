@@ -16,29 +16,32 @@ import {
   Film,
 } from "lucide-react";
 
-// IMPORTANT:
-// Fallback contains MEDIA ONLY.
-// No fallback title, description, or button text is used.
+// Verified local high-definition biomedical equipment multi-product showcase images (Top 3)
 const FALLBACK_SLIDES = [
   {
-    id: "fallback-1",
+    id: "biomedical-1",
     type: "image",
-    url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1900&q=80",
+    url: "/images/hero/slide-1-clinical-analyzers-trio.jpg",
+    title: "Clinical Automated Analyzers & Lab Equipment",
   },
   {
-    id: "fallback-2",
+    id: "biomedical-2",
     type: "image",
-    url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1900&q=80",
+    url: "/images/hero/slide-2-icu-care-machines-trio.jpg",
+    title: "ICU & Critical Care Diagnostic Systems",
   },
   {
-    id: "fallback-3",
+    id: "biomedical-3",
     type: "image",
-    url: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1900&q=80",
+    url: "/images/hero/slide-3-ultrasound-lab-devices-trio.jpg",
+    title: "Diagnostic Imaging & Laboratory Centrifuge Units",
   },
 ];
 
 export default function HeroCarousel({
   homeData = null,
+  slides: propSlides = null,
+  images: propImages = null,
   locationTitle = "",
   makeLink = (path) => path,
 }) {
@@ -48,83 +51,133 @@ export default function HeroCarousel({
   const [touchEnd, setTouchEnd] = useState(null);
   const videoRefs = useRef({});
 
-  const parseMediaList = (data) => {
-    if (!data) return [];
+  const isInvalidOrOldHeroImage = (url) => {
+    if (!url || typeof url !== "string") return true;
+    const trimmed = url.trim();
+    if (!trimmed) return true;
+    const lower = trimmed.toLowerCase();
+    // Filter out previous non-biomedical images if any legacy URLs remain
+    return (
+      lower.includes("photo-1579684385127") ||
+      lower.includes("photo-1516549655169") ||
+      lower.includes("resort") ||
+      lower.includes("beach-umbrella") ||
+      lower.includes("hotel")
+    );
+  };
 
+  const extractUrl = (item) => {
+    if (!item) return "";
+    if (typeof item === "string") return item.trim();
+    if (typeof item === "object") {
+      return (
+        item.url ||
+        item.imageUrl ||
+        item.image ||
+        item.src ||
+        item.secure_url ||
+        item.downloadURL ||
+        item.link ||
+        item.mediaUrl ||
+        item.path ||
+        item.photo ||
+        item.bannerUrl ||
+        item.banner ||
+        ""
+      ).trim();
+    }
+    return "";
+  };
+
+  const parseMediaList = (data, directSlides, directImages) => {
     const list = [];
+    const seenUrls = new Set();
 
-    if (Array.isArray(data.media) && data.media.length > 0) {
-      data.media.forEach((item, idx) => {
-        const url = typeof item === "string" ? item : item?.url;
-        const type =
-          item?.type ||
-          (url?.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)
-            ? "video"
-            : "image");
+    const addMediaItem = (item, defaultType = "image") => {
+      const url = extractUrl(item);
+      if (!url || isInvalidOrOldHeroImage(url) || seenUrls.has(url)) return;
 
-        if (url) {
-          list.push({
-            id: `media-${idx}`,
-            type,
-            url,
-          });
-        }
-      });
-    }
+      seenUrls.add(url);
+      const isVid =
+        (typeof item === "object" && item?.type === "video") ||
+        (typeof item === "object" && item?.isVideo) ||
+        /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 
-    if (
-      list.length === 0 &&
-      Array.isArray(data.images) &&
-      data.images.length > 0
-    ) {
-      data.images.forEach((url, idx) => {
-        if (url) {
-          list.push({
-            id: `img-${idx}`,
-            type: "image",
-            url,
-          });
-        }
-      });
-    }
-
-    if (list.length === 0 && (data.imageUrl || data.image)) {
-      const singleImg = data.imageUrl || data.image;
-
-      if (singleImg) {
-        list.push({
-          id: "single-img",
-          type: "image",
-          url: singleImg,
-        });
-      }
-    }
-
-    if (Array.isArray(data.videos) && data.videos.length > 0) {
-      data.videos.forEach((vUrl, idx) => {
-        if (vUrl && !list.some((item) => item.url === vUrl)) {
-          list.push({
-            id: `vid-${idx}`,
-            type: "video",
-            url: vUrl,
-          });
-        }
-      });
-    }
-
-    if (data.videoUrl && !list.some((item) => item.url === data.videoUrl)) {
       list.push({
-        id: "single-vid",
-        type: "video",
-        url: data.videoUrl,
+        id: (typeof item === "object" && item?.id) || `media-${list.length}-${url.slice(-8)}`,
+        type: isVid ? "video" : (typeof item === "object" && item?.type) || defaultType,
+        url,
       });
+    };
+
+    // 1. Direct slides or images passed via props
+    if (Array.isArray(directSlides) && directSlides.length > 0) {
+      directSlides.forEach((item) => addMediaItem(item));
+    }
+    if (Array.isArray(directImages) && directImages.length > 0) {
+      directImages.forEach((item) => addMediaItem(item, "image"));
+    }
+
+    // 2. Extract from homeData dynamic database object
+    if (data && typeof data === "object") {
+      // Direct media array
+      if (Array.isArray(data.media)) {
+        data.media.forEach((item) => addMediaItem(item));
+      }
+
+      // Arrays of hero/carousel/banner images or slides
+      const candidateArrays = [
+        data.heroImages,
+        data.images,
+        data.slides,
+        data.heroSlides,
+        data.heroMedia,
+        data.banners,
+        data.bannerImages,
+        data.sliderImages,
+        data.carousel,
+        data.sliders,
+        data.slider,
+        data.gallery,
+      ];
+
+      candidateArrays.forEach((arr) => {
+        if (Array.isArray(arr)) {
+          arr.forEach((item) => addMediaItem(item));
+        }
+      });
+
+      // Single hero image fields
+      const singleImageCandidates = [
+        data.imageUrl,
+        data.image,
+        data.heroImage,
+        data.bannerUrl,
+        data.banner,
+        data.bgImage,
+        data.backgroundImage,
+        data.coverImage,
+      ];
+
+      singleImageCandidates.forEach((img) => {
+        if (img) addMediaItem(img, "image");
+      });
+
+      // Video fields
+      if (Array.isArray(data.videos)) {
+        data.videos.forEach((v) => addMediaItem(v, "video"));
+      }
+      if (data.videoUrl) addMediaItem(data.videoUrl, "video");
+      if (data.video) addMediaItem(data.video, "video");
     }
 
     return list;
   };
 
-  const dbSlides = parseMediaList(homeData);
-  const slides = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
+  const dbSlides = parseMediaList(homeData, propSlides, propImages);
+  const rawSlides = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
+  // Hero section strictly limited to top 3 images
+  const slides = rawSlides.slice(0, 3);
 
   // ONLY MongoDB/admin data supplies copy.
   // There is intentionally NO static fallback for these four fields.
@@ -199,30 +252,29 @@ export default function HeroCarousel({
   const activeMedia = slides[currentSlide] || slides[0];
 
   return (
-    <section className="relative overflow-hidden bg-[#062D31] text-white">
+    <section className="relative overflow-hidden bg-gradient-to-r from-[#F0F8F9] via-[#E8F5F7] to-[#F5FAFB] text-[#10373C] border-b border-[#B6E2E7]/40">
       {/* =========================================================
-          FLOATING BIOMEDICAL CAROUSEL
-          - Full image carousel
-          - Floating glass content panel
+          FLOATING BIOMEDICAL CAROUSEL (Light Mode Aesthetic)
+          - Full image carousel with authentic biomedical equipment
+          - Transparent content panel with crisp dark typography
           - Floating carousel controls
-          - No static copy fallback
       ========================================================= */}
 
       <div
-        className="relative w-full h-[500px] sm:h-[560px] md:h-[620px] lg:h-[660px] overflow-hidden bg-[#062D31]"
+        className="relative w-full h-[370px] sm:h-[410px] md:h-[450px] lg:h-[480px] overflow-hidden bg-gradient-to-r from-[#F0F8F9] via-[#EAF5F7] to-[#F5FAFB]"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Background slide */}
+        {/* Background slide - Zoomed out full equipment view */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeMedia?.id || currentSlide}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.01 }}
-            transition={{ duration: 0.7, ease: "easeInOut" }}
-            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute inset-0 flex items-center justify-end"
           >
             {activeMedia?.type === "video" ? (
               <video
@@ -239,43 +291,42 @@ export default function HeroCarousel({
               />
             ) : (
               <img
-                src={activeMedia?.url}
-                alt={`Biomedical carousel slide ${currentSlide + 1}`}
-                className="h-full w-full object-cover object-center brightness-[0.88] contrast-[1.04]"
+                src={activeMedia?.url || FALLBACK_SLIDES[0].url}
+                alt={`Biomedical equipment carousel slide ${currentSlide + 1}`}
+                className="h-full w-full object-contain sm:object-contain object-right lg:object-right brightness-[1.0] contrast-[1.03] opacity-100 drop-shadow-lg"
                 onError={(e) => {
-                  // Image fallback is intentionally retained.
-                  e.currentTarget.src = FALLBACK_SLIDES[0].url;
+                  const fallbackIdx = currentSlide % FALLBACK_SLIDES.length;
+                  const fallbackUrl = FALLBACK_SLIDES[fallbackIdx].url;
+                  if (e.currentTarget.src !== fallbackUrl) {
+                    e.currentTarget.src = fallbackUrl;
+                  }
                 }}
               />
             )}
           </motion.div>
         </AnimatePresence>
 
-        {/* Biomedical teal cinematic overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#021B1E]/72 via-[#062D31]/35 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#021B1E]/65 via-transparent to-[#062D31]/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_45%,rgba(0,139,154,0.18),transparent_42%)]" />
+        {/* Soft directional scrim - Protects text readability on the left while keeping machines fully bright on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F0F8F9] via-[#F0F8F9]/85 to-transparent w-full md:w-[60%] lg:w-[48%] pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/40 to-transparent pointer-events-none" />
 
         {/* =========================================================
-            FLOATING CONTENT CARD
+            TRANSPARENT CONTENT SECTION (Crisp Dark Text)
         ========================================================= */}
-        <div className="container-custom relative z-20 h-full flex items-center py-8 sm:py-10">
-          <div className="w-full max-w-3xl">
+        <div className="container-custom relative z-20 h-full flex items-center py-4 sm:py-5">
+          <div className="w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] lg:max-w-[490px] xl:max-w-[510px]">
             <motion.div
               key={`content-${currentSlide}`}
-              initial={{ opacity: 0, x: -25, y: 8 }}
+              initial={{ opacity: 0, x: -12, y: 3 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.55, ease: "easeOut" }}
-              className="relative max-w-3xl rounded-[28px] border border-white/25 bg-[#062D31]/88 p-5 sm:p-7 md:p-9 shadow-2xl backdrop-blur-xl"
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="relative text-left"
             >
-              {/* Decorative teal glow */}
-              <div className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-[#008B9A]/20 blur-2xl" />
-
               {/* Badge */}
-              <div className="relative inline-flex items-center gap-2 rounded-full border border-[#22AFC0]/35 bg-[#062D31]/75 px-3.5 py-1.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.12em] !text-white shadow-lg">
+              <div className="relative inline-flex items-center gap-1.5 rounded-full border border-[#008B9A]/30 bg-[#008B9A]/10 px-3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.08em] !text-[#005C66] shadow-sm backdrop-blur-sm">
                 <Sparkles
-                  size={14}
-                  className="shrink-0 text-[#22AFC0]"
+                  size={12}
+                  className="shrink-0 text-[#008B9A]"
                 />
                 <span>
                   {locationTitle
@@ -284,27 +335,27 @@ export default function HeroCarousel({
                 </span>
               </div>
 
-              {/* Dynamic title */}
+              {/* Dynamic title - Clean dark blackish-teal text */}
               {heroTitle && (
                 <motion.h1
                   key={`title-${currentSlide}-${heroTitle}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.08 }}
-                  className="relative mt-4 text-3xl font-black leading-[1.08] tracking-tight !text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl lg:text-6xl"
+                  transition={{ duration: 0.3, delay: 0.05 }}
+                  className="relative mt-2 sm:mt-2.5 text-lg sm:text-xl md:text-2xl lg:text-[26px] xl:text-[28px] font-extrabold leading-[1.22] tracking-tight !text-[#10373C]"
                 >
                   {heroTitle}
                 </motion.h1>
               )}
 
-              {/* Dynamic description */}
+              {/* Dynamic description - Dark readable text */}
               {heroDescription && (
                 <motion.p
                   key={`desc-${currentSlide}-${heroDescription}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.16 }}
-                  className="relative mt-4 max-w-2xl text-sm font-medium leading-7 !text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-base"
+                  transition={{ duration: 0.3, delay: 0.08 }}
+                  className="relative mt-2 sm:mt-2.5 max-w-[450px] text-xs sm:text-[13px] md:text-sm font-normal leading-relaxed !text-[#38555A] line-clamp-3"
                 >
                   {heroDescription}
                 </motion.p>
@@ -313,19 +364,19 @@ export default function HeroCarousel({
               {/* Dynamic buttons */}
               {(btn1Text || btn2Text) && (
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.24 }}
-                  className="relative mt-6 flex flex-wrap items-center gap-3"
+                  transition={{ duration: 0.3, delay: 0.12 }}
+                  className="relative mt-3 sm:mt-3.5 flex flex-wrap items-center gap-2.5"
                 >
                   {btn1Text && (
                     <Link
                       href={btn1Href}
-                      className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#22AFC0]/40 bg-[#008B9A] px-5 py-3 text-sm font-extrabold !text-white shadow-xl shadow-[#008B9A]/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#007684] hover:shadow-2xl"
+                      className="group inline-flex min-h-9 sm:min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#008B9A] px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold !text-white shadow-md shadow-[#008B9A]/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#007684] hover:shadow-lg"
                     >
-                      <span className="!text-white">{btn1Text}</span>
+                      <span className="!text-white font-bold">{btn1Text}</span>
                       <ArrowRight
-                        size={17}
+                        size={14}
                         className="!text-white transition-transform duration-300 group-hover:translate-x-1"
                       />
                     </Link>
@@ -334,40 +385,40 @@ export default function HeroCarousel({
                   {btn2Text && (
                     <Link
                       href={btn2Href}
-                      className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/30 bg-black/35 px-5 py-3 text-sm font-extrabold !text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white hover:bg-white hover:!text-[#10373C]"
+                      className="group inline-flex min-h-9 sm:min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#B6E2E7] bg-white px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold !text-[#10373C] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#008B9A] hover:!text-[#008B9A] hover:shadow-md"
                     >
                       <PhoneCall
-                        size={17}
-                        className="text-[#22AFC0] transition-colors duration-300 group-hover:text-[#008B9A]"
+                        size={14}
+                        className="text-[#008B9A] transition-colors duration-300"
                       />
-                      <span className="font-extrabold">{btn2Text}</span>
+                      <span className="font-bold">{btn2Text}</span>
                     </Link>
                   )}
                 </motion.div>
               )}
 
-              {/* Trust strip stays part of design, not copy fallback */}
-              <div className="relative mt-6 hidden flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/15 pt-4 text-xs font-semibold !text-white/95 sm:flex">
-                <div className="flex items-center gap-1.5">
+              {/* Trust strip */}
+              <div className="relative mt-3.5 sm:mt-4 hidden flex-wrap items-center gap-2 border-t border-[#B6E2E7]/70 pt-3 sm:flex">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B6E2E7] bg-white/90 px-3 py-0.5 text-[10.5px] sm:text-[11px] font-bold text-[#10373C] shadow-xs">
                   <CheckCircle2
-                    size={15}
-                    className="shrink-0 text-[#22AFC0]"
+                    size={13}
+                    className="shrink-0 text-[#008B9A]"
                   />
                   <span>ISO 13485 Certified</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B6E2E7] bg-white/90 px-3 py-0.5 text-[10.5px] sm:text-[11px] font-bold text-[#10373C] shadow-xs">
                   <CheckCircle2
-                    size={15}
-                    className="shrink-0 text-[#22AFC0]"
+                    size={13}
+                    className="shrink-0 text-[#008B9A]"
                   />
                   <span>24/7 SLA Field Support</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B6E2E7] bg-white/90 px-3 py-0.5 text-[10.5px] sm:text-[11px] font-bold text-[#10373C] shadow-xs">
                   <CheckCircle2
-                    size={15}
-                    className="shrink-0 text-[#22AFC0]"
+                    size={13}
+                    className="shrink-0 text-[#008B9A]"
                   />
                   <span>NABL Traceable QC</span>
                 </div>
@@ -377,20 +428,20 @@ export default function HeroCarousel({
         </div>
 
         {/* =========================================================
-            FLOATING CAROUSEL CONTROLS
+            FLOATING CAROUSEL CONTROLS (Light Mode)
         ========================================================= */}
         {slides.length > 1 && (
           <>
             {/* Desktop / tablet floating controls */}
-            <div className="absolute bottom-5 right-5 z-30 hidden items-center gap-2 rounded-2xl border border-white/20 bg-[#062D31]/90 p-1.5 shadow-2xl backdrop-blur-xl sm:flex md:bottom-7 md:right-7">
+            <div className="absolute bottom-3 right-3 z-30 hidden items-center gap-1.5 rounded-xl border border-[#B6E2E7] bg-white/95 p-1 shadow-lg backdrop-blur-xl sm:flex md:bottom-4 md:right-4">
               <button
                 type="button"
                 onClick={() => setIsPlaying((value) => !value)}
                 title={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
                 aria-label={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white transition-all hover:border-[#22AFC0] hover:bg-[#008B9A] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#B6E2E7] bg-white text-[#10373C] transition-all hover:border-[#008B9A] hover:bg-[#008B9A] hover:text-white"
               >
-                {isPlaying ? <Pause size={15} /> : <Play size={15} />}
+                {isPlaying ? <Pause size={13} /> : <Play size={13} />}
               </button>
 
               <button
@@ -398,16 +449,16 @@ export default function HeroCarousel({
                 onClick={handlePrev}
                 title="Previous Slide"
                 aria-label="Previous Slide"
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white transition-all hover:border-[#22AFC0] hover:bg-[#008B9A] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#B6E2E7] bg-white text-[#10373C] transition-all hover:border-[#008B9A] hover:bg-[#008B9A] hover:text-white"
               >
-                <ChevronLeft size={19} />
+                <ChevronLeft size={16} />
               </button>
 
-              <div className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-extrabold text-[#E4F8FA]">
+              <div className="flex h-8 items-center gap-1.5 rounded-lg border border-[#B6E2E7] bg-[#F4FBFC] px-2 text-[11px] font-bold text-[#10373C]">
                 {activeMedia?.type === "video" ? (
-                  <Film size={13} className="text-[#22AFC0]" />
+                  <Film size={11} className="text-[#008B9A]" />
                 ) : (
-                  <ImageIcon size={13} className="text-[#22AFC0]" />
+                  <ImageIcon size={11} className="text-[#008B9A]" />
                 )}
                 <span>
                   {String(currentSlide + 1).padStart(2, "0")} /{" "}
@@ -420,23 +471,23 @@ export default function HeroCarousel({
                 onClick={handleNext}
                 title="Next Slide"
                 aria-label="Next Slide"
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white transition-all hover:border-[#22AFC0] hover:bg-[#008B9A] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#B6E2E7] bg-white text-[#10373C] transition-all hover:border-[#008B9A] hover:bg-[#008B9A] hover:text-white"
               >
-                <ChevronRight size={19} />
+                <ChevronRight size={16} />
               </button>
             </div>
 
             {/* Floating pagination */}
-            <div className="absolute bottom-5 left-5 z-30 flex items-center gap-2 rounded-full border border-white/15 bg-[#062D31]/88 px-3 py-2 backdrop-blur-xl md:bottom-7 md:left-7">
+            <div className="absolute bottom-3 left-3 z-30 flex items-center gap-1.5 rounded-full border border-[#B6E2E7] bg-white/95 px-2.5 py-1.5 shadow-md backdrop-blur-xl md:bottom-4 md:left-4">
               {slides.map((slide, idx) => (
                 <button
                   key={slide.id || idx}
                   type="button"
                   onClick={() => setCurrentSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2 rounded-full transition-all duration-300 ${currentSlide === idx
-                    ? "w-8 bg-[#22AFC0] shadow-lg shadow-[#22AFC0]/50"
-                    : "w-2 bg-white/45 hover:bg-white"
+                  className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx
+                    ? "w-6 bg-[#008B9A] shadow-sm"
+                    : "w-1.5 bg-[#B6E2E7] hover:bg-[#008B9A]/60"
                     }`}
                 />
               ))}
@@ -446,23 +497,23 @@ export default function HeroCarousel({
 
         {/* Mobile next/previous floating controls */}
         {slides.length > 1 && (
-          <div className="absolute bottom-5 right-5 z-30 flex items-center gap-2 sm:hidden">
+          <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5 sm:hidden">
             <button
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-[#062D31]/75 text-white shadow-xl backdrop-blur-xl"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B6E2E7] bg-white text-[#10373C] shadow-md"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={16} />
             </button>
 
             <button
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-[#062D31]/75 text-white shadow-xl backdrop-blur-xl"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B6E2E7] bg-white text-[#10373C] shadow-md"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={16} />
             </button>
           </div>
         )}

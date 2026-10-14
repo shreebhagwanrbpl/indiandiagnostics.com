@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import ServicesPage from "@/app/services/page";
 
 export default async function Page({ params }) {

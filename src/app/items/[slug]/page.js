@@ -1,31 +1,36 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import ProductDetails from "./ProductDetails";
+import { fetchProductBySlug, fetchDocCached } from "@/lib/data-fetcher-server";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
+    const product = await fetchProductBySlug(slug).catch(() => null);
 
-    const productName = slug
+    const productName = product?.title || slug
         ?.replace(/-/g, " ")
         ?.replace(/\b\w/g, (c) => c.toUpperCase());
 
-    const title = `${productName} Supplier in India | Price, Dealer & Distributor | Raj Biosis Private Limited`;
+    const title = `${productName} Supplier in India | Specifications, Dealer & Distributor | Raj Biosis Private Limited`;
 
-    const description = `Buy ${productName} at best price in India. Trusted supplier, dealer and distributor of ${productName} for hospitals, laboratories, diagnostic centers, research institutes and healthcare facilities. Contact Raj Biosis Private Limited  for latest quotation and product details.`;
+    const description = product?.description || product?.desc
+        ? `${(product.description || product.desc).substring(0, 160)}... Buy ${productName} in India. Authorized supplier Raj Biosis Private Limited.`
+        : `Buy ${productName} in India. Trusted supplier, dealer and distributor of ${productName} for hospitals, laboratories, diagnostic centers, research institutes and healthcare facilities. Contact Raj Biosis Private Limited for technical specifications and quotation.`;
 
     const url = `https://indiandiagnostics.com/items/${slug}`;
+    const ogImage = product?.image || "/logo.png";
 
     return {
         title,
         description,
-
         keywords: [
             productName,
             `${productName} Supplier`,
             `${productName} Dealer`,
             `${productName} Distributor`,
             `${productName} Manufacturer`,
-            `${productName} Exporter`,
-            `${productName} Price`,
-            `${productName} Price in India`,
+            `${productName} Specifications`,
             `${productName} Supplier in India`,
             `${productName} Dealer in India`,
             `${productName} Distributor in India`,
@@ -42,11 +47,9 @@ export async function generateMetadata({ params }) {
             "Raj Biosis Private Limited",
             "Raj Biosis",
         ],
-
         alternates: {
             canonical: url,
         },
-
         openGraph: {
             title,
             description,
@@ -54,14 +57,21 @@ export async function generateMetadata({ params }) {
             siteName: "Raj Biosis Private Limited",
             type: "website",
             locale: "en_IN",
+            images: [
+                {
+                    url: ogImage,
+                    width: 800,
+                    height: 600,
+                    alt: productName,
+                },
+            ],
         },
-
         twitter: {
             card: "summary_large_image",
             title,
             description,
+            images: [ogImage],
         },
-
         robots: {
             index: true,
             follow: true,
@@ -73,13 +83,22 @@ export async function generateMetadata({ params }) {
                 "max-snippet": -1,
             },
         },
-
         metadataBase: new URL("https://indiandiagnostics.com"),
     };
 }
 
 export default async function Page({ params }) {
     const { slug } = await params;
+    const [product, contactData] = await Promise.all([
+        fetchProductBySlug(slug).catch(() => null),
+        fetchDocCached("__website__/contact").catch(() => null),
+    ]);
 
-    return <ProductDetails slug={slug} />;
+    return (
+        <ProductDetails
+            slug={slug}
+            initialProduct={product}
+            initialContactInfo={contactData?.contactInfo || []}
+        />
+    );
 }

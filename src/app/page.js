@@ -32,7 +32,8 @@ import ServiceCard from "@/components/ServiceCard";
 import ProductCard from "@/components/ProductCard";
 import ContactForm from "@/components/ContactForm";
 import HeroCarousel from "@/components/HeroCarousel";
-import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
+import { fetchAllDynamicProducts, normalizeProduct } from "@/lib/fetchProducts";
+import { subscribeToCatalog } from "@/lib/data-fetcher";
 
 const stats = [
   {
@@ -141,20 +142,10 @@ export default function Home({ city }) {
 
     const fetchData = async () => {
       try {
-        const hostname =
-          typeof window !== "undefined" ? window.location.hostname : "";
-
-        const websiteId =
-          hostname === "localhost" || hostname === "127.0.0.1"
-            ? "globalhealthcartcom"
-            : hostname
-              .replace(/^www\./, "")
-              .replace(/\./g, "");
-
         const [homeSnap, contactSnap, serviceSnap, fetchedProducts] = await Promise.all([
           getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "home")),
           getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "contact")),
-          getDoc(doc(db, "websites", websiteId, "pages", "services")),
+          getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "services")),
           fetchAllDynamicProducts(),
         ]);
 
@@ -186,8 +177,21 @@ export default function Home({ city }) {
 
     fetchData();
 
+    // Real-time catalog subscription with live sync
+    const unsubscribe = subscribeToCatalog((update) => {
+      if (!isMounted) return;
+      const updatedProducts = Array.isArray(update) ? update : update?.products;
+      if (Array.isArray(updatedProducts)) {
+        const normalized = updatedProducts
+          .map((item) => normalizeProduct(item))
+          .filter(Boolean);
+        setProducts(normalized);
+      }
+    }, 3000);
+
     return () => {
       isMounted = false;
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
@@ -330,11 +334,45 @@ export default function Home({ city }) {
           </div>
 
           {/* Product Grid */}
-          <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {featuredProducts.map((prod) => (
-              <ProductCard key={prod.id} product={prod} makeLink={makeLink} />
-            ))}
-          </div>
+          {featuredProducts.length === 0 ? (
+            <div className="mt-10 overflow-hidden rounded-3xl border border-[#B6E2E7] bg-gradient-to-b from-white via-[#F4FBFC] to-white p-8 sm:p-12 text-center shadow-lg shadow-[#008B9A]/5">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#008B9A] to-[#22AFC0] text-white shadow-md shadow-[#008B9A]/25">
+                <Sparkles size={28} className="animate-pulse" />
+              </div>
+              <div className="mt-5 flex justify-center">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#B6E2E7] bg-[#F4FBFC] px-3.5 py-1 text-xs font-bold text-[#008B9A] uppercase tracking-wider">
+                  <Clock size={13} /> New Catalog In Arrival
+                </span>
+              </div>
+              <h3 className="mt-3 text-2xl sm:text-3xl font-black text-[#10373C]">
+                Products Coming Soon
+              </h3>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-[#45656A] leading-relaxed">
+                Our diagnostic analyzers and laboratory systems catalog is currently being updated. Reach out to our biomedical engineering team directly for quotes and equipment availability.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={makeLink("/contact")}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#008B9A] px-6 py-3 text-xs sm:text-sm font-bold !text-white shadow-md hover:bg-[#005C66]"
+                >
+                  <span>Contact Our Specialists</span>
+                  <ArrowRight size={15} />
+                </Link>
+                <Link
+                  href={makeLink("/services")}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#B6E2E7] bg-white px-6 py-3 text-xs sm:text-sm font-bold text-[#10373C] hover:bg-[#F4FBFC]"
+                >
+                  <span>View Services</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {featuredProducts.map((prod) => (
+                <ProductCard key={prod.id || prod.slug} product={prod} makeLink={makeLink} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

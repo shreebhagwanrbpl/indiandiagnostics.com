@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import ProductDetails from "../../../items/[slug]/ProductDetails";
 
 export default async function Page({ params }) {

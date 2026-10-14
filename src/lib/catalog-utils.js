@@ -10,16 +10,37 @@ export function normalizeWebsiteId(value = "") {
 }
 
 export function isVisibleForWebsite(data = {}, websiteId = WEBSITE_ID) {
-  if (!data || data.isPublished === false) return false;
-  const status = String(data.status || "").toLowerCase();
-  if (status === "inactive" || status === "draft") return false;
-  if (!Array.isArray(data.websiteIds)) return true;
-  if (data.websiteIds.length === 0) return false;
+  if (!data) return false;
+  if (data.isPublished === false || data.isPublished === "false") return false;
+  if (data.isVisible === false || data.isVisible === "false") return false;
+  if (data.visible === false || data.visible === "false") return false;
+  if (data.hidden === true || data.hidden === "true") return false;
+
+  const status = String(data.status || "").toLowerCase().trim();
+  if (status === "inactive" || status === "draft" || status === "hidden" || status === "disabled" || status === "archived") {
+    return false;
+  }
+
   const wanted = normalizeWebsiteId(websiteId);
-  return data.websiteIds.some((id) => {
-    const value = normalizeWebsiteId(id);
-    return value === "all" || value === wanted;
-  });
+
+  // Check direct websiteId string
+  if (data.websiteId) {
+    const directId = normalizeWebsiteId(data.websiteId);
+    if (directId === "all" || directId === wanted) return true;
+  }
+
+  // Check websiteIds array
+  if (Array.isArray(data.websiteIds)) {
+    if (data.websiteIds.length === 0) {
+      return Boolean(data.websiteId && (normalizeWebsiteId(data.websiteId) === wanted || normalizeWebsiteId(data.websiteId) === "all"));
+    }
+    return data.websiteIds.some((id) => {
+      const value = normalizeWebsiteId(id);
+      return value === "all" || value === wanted;
+    });
+  }
+
+  return true;
 }
 
 export function isItemVisibleOnWebsite(data = {}, websiteId = WEBSITE_ID) {

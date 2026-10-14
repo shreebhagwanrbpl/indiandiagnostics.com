@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import AboutPage from "@/app/about/page";
 
 export default async function Page({ params }) {

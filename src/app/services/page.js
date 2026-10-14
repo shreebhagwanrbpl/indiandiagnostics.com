@@ -81,16 +81,9 @@ export default function ServicesPage() {
     let isMounted = true;
     const fetchServicesAndContact = async () => {
       try {
-        const hostname =
-          typeof window !== "undefined" ? window.location.hostname : "";
-        const websiteId =
-          hostname === "localhost" || hostname === "127.0.0.1"
-            ? "globalhealthcartcom"
-            : hostname.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-
         const [servicesSnap, contactSnap] = await Promise.all([
-          getDoc(doc(db, "websites", websiteId, "pages", "services")),
-          getDoc(doc(db, "websites", websiteId, "pages", "contact")),
+          getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "services")),
+          getDoc(doc(db, "websites", "indiandiagnosticscom", "pages", "contact")),
         ]);
 
         if (!isMounted) return;
@@ -166,12 +159,7 @@ export default function ServicesPage() {
       {/* Services Grid Section */}
       <section className="section-padding bg-gradient-to-b from-white via-[#F4FBFC] to-[#E4F8FA]">
         <div className="container-custom">
-          <SectionTitle
-            badge="Full Service Catalog"
-            title="Designed Around Reliable Operations"
-            description="Explore our specialized services designed to keep clinical laboratories and hospital departments operating at peak accuracy."
-            center
-          />
+
 
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (

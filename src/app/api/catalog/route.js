@@ -1,21 +1,25 @@
 import { NextResponse } from "next/server";
-import { fetchFullCatalog } from "@/lib/data-fetcher-server";
+import { fetchFullCatalogData } from "@/lib/data-fetcher-server";
 
-export const dynamic = "auto";
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const headers = {
-  "Cache-Control": "public, max-age=60, s-maxage=120, stale-while-revalidate=300",
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  "Pragma": "no-cache",
 };
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const products = await fetchFullCatalog();
-    return NextResponse.json({ products }, { headers });
+    const { searchParams } = new URL(request.url);
+    const fresh = searchParams.get("fresh") === "1" || searchParams.has("t");
+    const { products, categories } = await fetchFullCatalogData({ fresh });
+    return NextResponse.json({ products, categories }, { headers });
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error?.message || "Catalog request failed" },
-      { status: 500, headers: { "Cache-Control": "no-store" } }
+      { status: 500, headers }
     );
   }
 }
